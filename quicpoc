@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Check if the correct number of arguments is provided
+# if [ "$#" -ne 2 ]; then
+#     echo "Usage: $0 <source_path> <destination_path>"
+#     exit 1
+# fi
+
+# Store source and destination paths from command line arguments
+source_path="$1"
+
+# Check if the source file exists
+if [ ! -e "$source_path" ]; then
+    echo "Error: Source file '$source_path' does not exist."
+    exit 1
+fi
+
+# Extract the first word from the source file
+file_name=$(basename -s .sol "$source_path")
+file_name_lowercase=$(echo "$file_name" | tr '[:upper:]' '[:lower:]')
+
+destination_path="./test/$file_name.t.sol"
+
+# Multi-line content using a here document
+text=$"// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
+
+import {Test, console2} from \"forge-std/Test.sol\";
+import {$file_name} from \"$source_path\";
+
+contract ${file_name}Test is Test {
+    ${file_name} public ${file_name_lowercase};
+
+    function setUp() public {
+        ${file_name_lowercase} = new ${file_name}();
+    }
+
+    function test_solution() public {
+    }
+}
+"
+
+# Perform the file copy
+echo -e "$text" > "$destination_path"
+
+# Check if the copy was successful
+if [ "$?" -eq 0 ]; then
+    echo "File successfully modified and copied from '$source_path' to '$destination_path'."
+else
+    echo "Error: Failed to modify and copy file from '$source_path' to '$destination_path'."
+fi
