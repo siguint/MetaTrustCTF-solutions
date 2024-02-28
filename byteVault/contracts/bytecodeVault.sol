@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.5.11;
+pragma solidity ^0.8.11;
 
 contract BytecodeVault {
     address public owner;
@@ -28,11 +28,11 @@ contract BytecodeVault {
         }
         require(senderCode.length % 2 == 1, "Bytecode length must be even!");
         for(uint256 i = 0; i < senderCode.length - 3; i++) {
-            if(senderCode[i] == byte(uint8(sequence >> 24))
-                && senderCode[i+1] == byte(uint8((sequence >> 16) & 0xFF))
-                && senderCode[i+2] == byte(uint8((sequence >> 8) & 0xFF))
-                && senderCode[i+3] == byte(uint8(sequence & 0xFF))) {
-                msg.sender.transfer(address(this).balance);
+            if(senderCode[i] == bytes1(uint8(sequence >> 24))
+                && senderCode[i+1] == bytes1(uint8((sequence >> 16) & 0xFF))
+                && senderCode[i+2] == bytes1(uint8((sequence >> 8) & 0xFF))
+                && senderCode[i+3] == bytes1(uint8(sequence & 0xFF))) {
+                msg.sender.call{value: address(this).balance}("");
                 return;
             }
         }

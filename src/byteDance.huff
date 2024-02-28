@@ -1,7 +1,3 @@
-#define constant VALUE = FREE_STORAGE_POINTER()
-
-
-
 #define macro MAIN() = takes(0) returns(0) {
     // Get the function selector
     0xffff
