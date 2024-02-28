@@ -48,6 +48,23 @@ def calculateForRewardRate(_rewardRateBase: uint256=1, _multiplicate: uint256=20
         _result = _multiplicateShift * (_rewardRateBase + 5)
     return _result
 
+
+@external
+def calculateForRewardRate(_rewardRateBase: uint256=1) -> uint256:
+    _multiplicate: uint256 = 20
+    _result: uint256 = 0
+    _multiplicateShift: uint256 = 0
+    if _rewardRateBase <= 10:
+        _multiplicateShift = _multiplicate * 3
+        _result = _multiplicateShift * _rewardRateBase
+    elif _rewardRateBase > 10 and _rewardRateBase <= 20:
+        _multiplicateShift = _multiplicate * 4
+        _result = _multiplicateShift * (_rewardRateBase - 5)
+    else:
+        _multiplicateShift = _multiplicate * 5
+        _result = _multiplicateShift * (_rewardRateBase + 5)
+    return _result
+
 @external
 def purchaseForOwner():
     assert self.deposits[msg.sender] == OWNER_PURCHASE_COST * block.timestamp
