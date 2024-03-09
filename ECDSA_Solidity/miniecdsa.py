@@ -237,7 +237,9 @@ def verify_ctf(r,s):
     assert res == 1
     return res
 
-#pub = pubkey(ps_bob)
+ps_bob = 0x47d9c75e3fa55b73e360498f10cd275b6d757b1e0281133b78eb502d7e19c14a
+pub = pubkey(ps_bob)
+print(hex(pub.x), hex(pub.y))
 
 pkx = 0x209d386328994af4bbf0ff8bb6cdbb0e87e01e2118b1c12b94c555a1726129c6
 pky = 0x76ac8f2fda3a921bd3dcc1d2f0741b91dcd18d053a67a4ece89761e64a0881b1
@@ -245,8 +247,8 @@ pky = 0x76ac8f2fda3a921bd3dcc1d2f0741b91dcd18d053a67a4ece89761e64a0881b1
 pm1 = 0xca1ad489ab60ea581e6c119cc39d94ddbfc5faa0e178a23ca66202c8c2a72277
 pm2 = 0x0f1ae6c77fee73f3ac9be1217f50c576c07d7e5faa0e178a232dd33d09ff2cde
 
-#(pr1,ps1) = sign_ecdsa(ps_bob,pm1)
-#(pr2,ps2) = sign_ecdsa(ps_bob,pm2)
+(pr1,ps1) = sign_ecdsa(ps_bob,pm1)
+(pr2,ps2) = sign_ecdsa(ps_bob,pm2)
 pr1 =  0x22c2921acf3a393a0bbaf1f68ee7e02f8385ff60ca67c41a1de3cff3fdaa1a74
 ps1 =  0x1878dbc4684de3a63a5975325b467cdba846b24d949322016fe4c8fd2c0862a1
 
@@ -259,3 +261,38 @@ print("res_pm1 = ",res)
 
 res = verify_ecdsa(pub,pm2,pr2,ps2)
 print("res_pm2 = ",res)
+
+pm3 = 0xd935bb512b4f5e4bcb07f2be42ee5a54804379008b86b9c6c98fd605cca64f55
+
+x1 = 0x53b907251bc1ceb7ab0eb41323afb7126600fe4cb2a9a2e8a797127508f97009
+y1 = 0xc7b390484e2baae92df41f50e537e57185cb18017650a6d3220a42a97727217d 
+x2 = 0xacbc2999fb58c6e9015a12a4c5f3849e301649b2271eaaaf21906ed03cafdf45 
+y2 = 0x146aac3f7f74047fd45cf0098fadee5cd00f7f6871440387ba402f2390d7276f  
+P1 = EPoint(x1,y1)
+P2 = EPoint(x2,y2)
+
+# pm1 * P1 + d * P2 = k1
+# pm2 * P1 + d * P2 = k2
+# pm3 * P1 + d * P2 = k3
+# P1 * pm2 - P1 * pm1) = k2 - k1 = p
+
+PM1 = mult(P1, pm1)
+PM2 = mult(P1, pm2)
+p = bigint_sub_mod(PM2.x, PM1.x, SN)
+
+# ps1 * k1 - (pm1 + pr1 * d) == 0
+# ps1 * k1 - (pm1 + pr1 * d) == 0
+# d == (ps1 * k1 - pm1) / pr1
+# ps2 * k2 - (pm2 + pr2 * d) == 0
+# ps2 * p + ps2 * k1 - (pm2 + pr2 * d) == 0
+# ps2 * p + ps2 * k1 - pm2 - pr2 * ps1 * k1 / pr1 + pr2 * pm1 / pr1 == 0
+# k1 == (ps2 * p * pr1 - pm2 * pr1 + pr2 * pm1) / (pr2 * ps1 - ps2 * pr1)
+k1 = bigint_div_mod((ps2 * p * pr1 - pm2 * pr1 + pr2 * pm1), (pr2 * ps1 - ps2 * pr1), SN)
+
+d = bigint_div_mod((k1 * ps1 - pm1), pr1, SN)
+print("d =", hex(d))
+
+(pr3,ps3) = sign_ecdsa(d,pm3)
+print(hex(pr3), hex(ps3))
+res = verify_ecdsa(pub,pm3,pr3,ps3)
+print("res_pm1 = ",res)
